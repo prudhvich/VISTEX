@@ -1,0 +1,250 @@
+<!doctype html>
+<html ng-app="app">
+  <head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular-touch.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular-animate.js"></script>
+    <script src="http://ui-grid.info/docs/grunt-scripts/csv.js"></script>
+    <script src="http://ui-grid.info/docs/grunt-scripts/pdfmake.js"></script>
+    <script src="http://ui-grid.info/docs/grunt-scripts/vfs_fonts.js"></script>
+    <script src="http://ui-grid.info/release/ui-grid.js"></script>
+    <link rel="stylesheet" href="http://ui-grid.info/release/ui-grid.css" type="text/css">
+    <link rel="stylesheet" href = "http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+</head>
+  <body>
+
+<div ng-controller="MainCtrl">
+  <div class="container">
+   <div id="grid1" ui-grid="gridOptions" ui-grid-edit ui-grid-cellNav  ui-grid-selection class="grid"></div>
+
+<br>
+<div class="row">
+<div class="col-xs-8">
+<input  class="btn btn-success" class="col-xs-4" type="button" value="AddColumn" ng-click="addColumn()"/>
+<input  class="btn btn-warning" class="col-xs-4" type="button" value="EditColumn" ng-disabled="disableCol" ng-click="editColumn()"/>
+<input  class="btn btn-danger" class="col-xs-4" type="button" value="RemoveColumn" ng-disabled="disableCol" ng-click="removeColumn()"/>
+
+</div>
+</div>
+
+<br>
+<div ng-hide="hideAdd" class="AddCol">
+ <h3>Add a new Column</h3>
+  <form class="form-horizontal"  novalidate  name="addColForm">
+
+                                <div class=" row   col-xs-12">
+                                    <div class="form-group  col-xs-3 " ng-class="{ 'has-error' :(  addColForm.colName.$dirty) &&  addColForm.colName.$touched && addColForm.colName.$invalid}">
+                                        <label for="colName">Column Name</label>
+                                        
+                                        <input type="text" class="form-control" id="colName" name="colName" placeholder="Column Name"  ng-model="col.name" ng-minlength="1" 
+                                               ng-maxlength="32" required >
+
+                                        <div class="help-block"  ng-show="( addColForm.colName.$dirty) && addColForm.colName.$touched && addColForm.colName.$invalid">
+                                            <p >Column Name is required and Max length is 32</p>
+                                                                                    
+                                    </div>
+
+                                </div>
+
+                                
+
+                                    <div class="form-group  col-xs-3 col-xs-offset-1 " ng-class="{ 'has-error' :( addColForm.colType.$dirty &&  addColForm.colType.$touched) && addColForm.colType.$invalid}">
+                                        <label for="colType">column Type</label>
+                                        
+                                        <input type="colType" class="form-control " id="colType" name="colType" ng-model="col.type" placeholder="Column Type"  ng-pattern="/^(string|date|boolean|number)$/i"
+                                               required>
+                                        <div class="help-block" ng-show="(addColForm.colType.$dirty  &&  addColForm.colType.$touched) && addColForm.colType.$invalid"> 
+                                            <p >Column Type is required and expected value must be from this any of this set [String,boolean,date,number]</p>
+                                        </div>
+
+                                   
+                                </div>
+
+                              
+                                    <div class="form-group col-xs-3 col-xs-offset-1  " ng-class="{ 'has-error' :( addColForm.colEditable.$dirty &&   addColForm.colEditable.$touched) &&  addColForm.colEditable.$invalid}">
+                                        <label for="colEditable">column Editable</label>
+                                        
+                                        <input type="colEditable" class="form-control " id="colEditable" name="colEditable" ng-model="col.editable" placeholder="false" ng-pattern="/^(true|false)$/i" required>
+                                        <div class="help-block" ng-show="(addColForm.colEditable.$dirty  &&  addColForm.colEditable.$touched) && addColForm.colEditable.$invalid"> 
+                                            <p >Column Editable  must be a boolean</p>
+                                        </div>
+                                    
+                                </div>
+                                </div>
+    
+
+                                <div class=" row ">
+                                    <div class="  col-xs-1 ">                                       
+                                        <button ng-click="add()" class="btn btn-primary "  ng-disabled="addColForm.$invalid">
+                                            Add
+                                        </button>
+                                        </div>
+                                        <div class="  col-xs-1 "> 
+                                         <button ng-click="cancel()" class="btn btn-danger "  >
+                                            cancel
+                                        </button>
+                                    </div>
+                                </div>
+
+
+
+                            </form>
+</div>
+
+
+<div ng-hide="hideEdit" class="Editcol">
+ <h3>Please Edit </h3>
+
+ <div class="row col-xs-8">
+ <form class="form-horizontal"  novalidate  name="editColForm">
+ <div class="col-xs-12">
+ <div class="form-group  col-xs-3 " ng-class="{ 'has-error' :(  editColForm.colName.$dirty) &&  editColForm.colName.$touched && editColForm.colName.$invalid}">
+                                        <label for="colName">Column Name</label>
+
+                                        <input type="text" class="form-control" id="colName" name="colName" placeholder="Column Name"  ng-model="col.name" ng-minlength="1" 
+                                               ng-maxlength="32" required >
+                                               <div class="help-block"  ng-show="( editColForm.colName.$dirty) && editColForm.colName.$touched && editColForm.colName.$invalid">
+                                            <p >Column Name is required and Max length is 32</p>
+                                                                                    
+                                    </div>
+
+                                </div>
+                                <div class="form-group  col-xs-3 col-xs-offset-1 " ng-class="{ 'has-error' :( editColForm.colType.$dirty &&  editColForm.colType.$touched) && editColForm.colType.$invalid}">
+                                        <label for="colType">column Type</label>
+                                        
+                                        <input type="colType" class="form-control " id="colType" name="colType" ng-model="col.type" placeholder="Column Type"  ng-pattern="/^(string|date|boolean|number)$/i"
+                                               required>
+                                        <div class="help-block" ng-show="(editColForm.colType.$dirty  &&  editColForm.colType.$touched) && editColForm.colType.$invalid"> 
+                                            <p >Column Type is required and expected value must be from this any of this set [String,boolean,date,number]</p>
+                                        </div>
+
+                                   
+                                </div>
+
+                              
+                                    <div class="form-group col-xs-3 col-xs-offset-1  " ng-class="{ 'has-error' :( editColForm.colEditable.$dirty &&   editColForm.colEditable.$touched) && editColForm.colEditable.$invalid}">
+                                        <label for="colEditable">column Editable</label>
+                                        
+                                        <input type="colEditable" class="form-control " id="colEditable" name="colEditable" ng-model="col.editable" placeholder="false" ng-pattern="/^(true|false)$/i" required>
+                                        <div class="help-block" ng-show="(editColForm.colEditable.$dirty  &&  editColForm.colEditable.$touched) && editColForm.colEditable.$invalid"> 
+                                            <p >Column Editable  must be a boolean</p>
+                                        </div>
+                                    
+                                </div>
+                                </div>
+    
+
+                                <div class=" row ">
+                                    <div class="  col-xs-1">                                       
+                                        <button ng-click="Edit()" class="btn btn-primary "  ng-disabled="editColForm.$invalid">
+                                            Edit
+                                        </button>
+                                        </div>
+                                        <div class="  col-xs-1 col-xs-offset-1 "> 
+                                         <button ng-click="cancel()" class="btn btn-danger "  >
+                                            cancel
+                                        </button>
+                                    </div>
+                                </div>
+
+
+
+                            </form>
+</div>
+
+
+</div>
+
+ 
+</div>
+
+
+
+ <div ng-hide="hideRemove" class="Removecol">
+ <h3>Are you sure you want to remove ?</h3>
+ 
+
+ <div class="col-xs-12">
+ <input  class="btn btn-danger" class="col-xs-3 " type="button" value="Remove" ng-click="Remove()"/>
+ <input  class="btn btn-success" class="col-xs-3 col-xs-offset-2" type="button" value="cancel" ng-click="cancel()"/>
+ </div>
+</div>
+
+<div class="SummaryTable">
+<h3 style="text-align:center"> Summary Table</h3>
+<div class="container">
+  <div id="grid1" ui-grid="gridOptions2" ui-grid-edit ui-grid-cellNav  ui-grid-selection class="grid"></div>
+
+
+ 
+
+<div class="row">
+<div class="col-xs-8">
+<input  class="btn btn-success" class="col-xs-4" type="button" value="AddRow" ng-click="addRow()"/>
+<input  class="btn btn-danger" class="col-xs-4" type="button" value="RemoveRow" ng-disabled="disableRow" ng-click="RemoveRow()"/>
+<input  class="btn btn-danger" class="col-xs-4" type="button" value="ExportJson"  ng-click="expotJson()"/>
+
+</div>
+</div>
+
+
+<div ng-hide="hideAddRow" class="Addcol">
+ 
+ <div class="row col-xs-8">
+ <div ng-show="iscolEmpty()">
+
+ <br/>
+<p> Please Add column in first Table then try to add a row </p>
+<input  class="btn btn-danger" class="col-xs-3 col-xs-offset-2" type="button" value="cancel" ng-click="rowCancel()"/>
+<br/>
+<h1></h1>
+ </div>
+ <div  ng-show="!iscolEmpty()" class="col-xs-12">
+ <h3>Please Add Row </h3>
+ 
+ <form class="form-horizontal"  novalidate  name="addRowForm">
+ <div ng-repeat="col in columns2">
+                                      
+                                         <div class="form-group col-xs-3" >                
+                                        <label>{{col.field}} {{col.type}}</label>
+                                        <input type="{{col.type}}" class="form-control" ng-minlength="1"  ng-model="rowData[col.field]"  required>
+                                        </div> 
+                                        </div>
+                                         
+                              
+                                </form>
+
+
+ 
+ <br/>
+ <h1></h1>
+  <div class="col-xs-12">
+ <input  class="btn btn-success" class="col-xs-3 " type="button" value="Add" ng-click="RowAddFinal()"/>
+ <input  class="btn btn-danger" class="col-xs-3 col-xs-offset-2" type="button" value="cancel" ng-click="rowCancel()"/>
+ </div>
+
+
+</div>
+</div>
+
+</div>
+
+  <div ng-hide="hideRemove" class="RemoveRow">
+ <h3>Are you sure you want to remove ?</h3>
+ 
+
+   
+   </div>
+  </div>
+
+
+
+
+</div>
+  </div>
+
+
+    <script src="app.js"></script>
+  </body>
+</html>
